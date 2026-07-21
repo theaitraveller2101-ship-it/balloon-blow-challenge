@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#2b1055">
+<title>Balloon Blow Challenge</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700;800&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+/* ======================================================
+   BALLOON BLOW CHALLENGE — styles
+   Theme tokens: carnival-dusk palette, day/night variants
+   ====================================================== */
+:root{
+  --font-display:'Baloo 2', system-ui, sans-serif;
+  --font-body:'Nunito', system-ui, sans-serif;
+
+  /* Light ("Fairground Day") */
+  --sky-a:#8ec5fc; --sky-b:#7f7fd5; --sky-c:#fbc2eb;
+  --cloud:#ffffff; --cloud-op:.85;
+  --glass-bg:rgba(255,255,255,.30);
+  --glass-border:rgba(255,255,255,.55);
+  --text-main:#241738;
+  --text-sub:#4b3a63;
+  --accent:#ff6f91;
+  --accent-2:#ffb703;
+  --accent-3:#3ddc97;
+  --shadow-col:rgba(36,23,56,.25);
+  --meter-bg:rgba(255,255,255,.35);
+  --btn-text:#241738;
+}
+body.dark{
+  /* Dark ("Carnival Night") */
+  --sky-a:#0b1026; --sky-b:#1b1240; --sky-c:#3a1f52;
+  --cloud:#c9c3ff; --cloud-op:.18;
+  --glass-bg:rgba(20,14,40,.45);
+  --glass-border:rgba(255,255,255,.18);
+  --text-main:#f4f0ff;
+  --text-sub:#c9c0e8;
+  --accent:#ff6f91;
+  --accent-2:#ffc857;
+  --accent-3:#4fe3b0;
+  --shadow-col:rgba(0,0,0,.55);
+  --meter-bg:rgba(255,255,255,.12);
+  --btn-text:#1b1240;
+}
+
+*{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+html,body{
+  height:100%; margin:0; overflow:hidden;
+  font-family:var(--font-body);
+  color:var(--text-main);
+}
+body{
+  min-height:100dvh;
+  background:linear-gradient(160deg,var(--sky-a),var(--sky-b) 55%,var(--sky-c));
+  transition:background .6s ease;
+  position:relative;
+}
+
+/* ---------- floating sky decor ---------- */
+#sky-decor{position:fixed; inset:0; overflow:hidden; z-index:0; pointer-events:none;}
+.cloud{
+  position:absolute; background:var(--cloud); opacity:var(--cloud-op);
+  border-radius:50%; filter:blur(1px);
+  animation:drift linear infinite;
+}
+.cloud::before,.cloud::after{content:'';position:absolute;background:inherit;border-radius:50%;}
+.cloud::before{width:60%;height:120%;left:-30%;top:-30%;}
+.cloud::after{width:70%;height:90%;right:-25%;top:-20%;}
+@keyframes drift{
+  from{transform:translateX(-20vw);}
+  to{transform:translateX(120vw);}
+}
+.twinkle{position:absolute; width:3px; height:3px; border-radius:50%; background:#fff; opacity:0; animation:twinkle 3.5s ease-in-out infinite;}
+@keyframes twinkle{0%,100%{opacity:0;}50%{opacity:.9;}}
+
+/* ---------- app shell ---------- */
+#app{
+  position:relative; z-index:1;
+  height:100dvh; display:flex; flex-direction:column;
+  padding:max(12px, env(safe-area-inset-top)) max(12px, env(safe-area-inset-right)) max(12px, env(safe-area-inset-bottom)) max(12px, env(safe-area-inset-left));
+}
+
+/* ---------- top bar ---------- */
+#topbar{
+  display:flex; justify-content:flex-end; gap:8px; padding:4px 4px 8px;
+}
+.icon-btn{
+  width:42px; height:42px; border-radius:50%;
+  border:1px solid var(--glass-border);
+  background:var(--glass-bg);
+  backdrop-filter:blur(10px);
+  -webkit-backdrop-filter:blur(10px);
+  color:var(--text-main);
+  font-size:19px; display:flex; align-items:center; justify-content:center;
+  cursor:pointer; transition:transform .15s ease, background .2s ease;
+}
+.icon-btn:active{transform:scale(.88);}
+
+/* ---------- generic screen ---------- */
+.screen{
+  flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center;
+  gap:18px; text-align:center; padding:8px 14px 24px;
+  animation:fadeIn .45s ease both;
+}
+.hidden{display:none !important;}
+@keyframes fadeIn{from{opacity:0; transform:translateY(8px);}to{opacity:1; transform:translateY(0);}}
+
+.glass-card{
+  background:var(--glass-bg);
+  border:1px solid var(--glass-border);
+  backdrop-filter:blur(16px);
+  -webkit-backdrop-filter:blur(16px);
+  border-radius:28px;
+  box-shadow:0 12px 40px var(--shadow-col);
+  padding:28px 22px;
+  width:min(420px, 92vw);
+}
+
+h1.title{
+  font-family:var(--font-display); font-weight:800;
+  font-size:clamp(28px,7vw,42px);
+  margin:0;
+  letter-spacing:.5px;
+  background:linear-gradient(90deg,var(--accent),var(--accent-2));
+  -webkit-background-clip:text; background-clip:text; color:transparent;
+}
+p.subtitle{margin:0; color:var(--text-sub); font-weight:600; font-size:clamp(13px,3.6vw,15px);}
+
+/* ---------- difficulty selector ---------- */
+#difficulty-row{display:flex; gap:10px; justify-content:center; flex-wrap:wrap; margin-top:6px;}
+.diff-btn{
+  font-family:var(--font-body); font-weight:800; font-size:14px;
+  padding:10px 16px; border-radius:16px; border:2px solid transparent;
+  background:var(--meter-bg); color:var(--text-main); cursor:pointer;
+  transition:all .15s ease;
+}
+.diff-btn.selected{
+  border-color:var(--accent);
+  background:linear-gradient(135deg,var(--accent),var(--accent-2));
+  color:#241738;
+  transform:translateY(-2px);
+}
+
+/* ---------- primary button ---------- */
+.btn-primary{
+  font-family:var(--font-display); font-weight:700; font-size:clamp(17px,4.6vw,20px);
+  color:#241738; border:none; cursor:pointer;
+  padding:16px 34px; border-radius:22px;
+  background:linear-gradient(135deg,var(--accent-2),var(--accent));
+  box-shadow:0 8px 22px rgba(255,111,145,.45);
+  transition:transform .15s ease, box-shadow .15s ease;
+}
+.btn-primary:active{transform:scale(.95); box-shadow:0 4px 12px rgba(255,111,145,.4);}
+.btn-secondary{
+  font-family:var(--font-body); font-weight:700; font-size:14px;
+  color:var(--text-main); border:1px solid var(--glass-border); cursor:pointer;
+  padding:10px 20px; border-radius:16px; background:var(--meter-bg);
+}
+
+/* ---------- leaderboard ---------- */
+#leaderboard{display:flex; flex-direction:column; gap:6px; width:100%; margin-top:4px;}
+.lb-row{display:flex; justify-content:space-between; font-size:13px; font-weight:700; color:var(--text-sub); padding:6px 10px; border-radius:10px; background:var(--meter-bg);}
+.lb-row span:last-child{color:var(--text-main);}
+
+/* ==================== GAME SCREEN ==================== */
+#screen-game{justify-content:space-between; padding-top:4px;}
+#hud{
+  width:100%; max-width:460px; display:flex; align-items:center; gap:10px;
+  padding:10px 14px; border-radius:20px;
+  background:var(--glass-bg); border:1px solid var(--glass-border);
+  backdrop-filter:blur(14px); -webkit-backdrop-filter:blur(14px);
+}
+.hud-item{display:flex; flex-direction:column; align-items:center; flex:1; min-width:0;}
+.hud-label{font-size:10px; letter-spacing:.06em; text-transform:uppercase; color:var(--text-sub); font-weight:700;}
+.hud-value{font-family:var(--font-display); font-size:20px; font-weight:700; color:var(--text-main);}
+.hud-value.warn{color:var(--accent);}
+
+/* mic level meter (party horn gauge) */
+#mic-meter-wrap{width:100%; max-width:460px;}
+#mic-meter-track{
+  height:14px; border-radius:10px; background:var(--meter-bg);
+  overflow:hidden; border:1px solid var(--glass-border); position:relative;
+}
+#mic-meter-fill{
+  height:100%; width:0%; border-radius:10px;
+  background:linear-gradient(90deg,var(--accent-3),var(--accent-2),var(--accent));
+  transition:width .06s linear;
+}
+#mic-meter-caption{font-size:11px; color:var(--text-sub); font-weight:700; margin-top:5px; text-align:center;}
+
+/* balloon stage */
+#stage{
+  position:relative; flex:1; width:100%; display:flex; align-items:flex-end; justify-content:center;
+  min-height:0;
+}
+#balloon-wrap{
+  position:relative; transform-origin:50% 100%;
+  transition:filter .2s ease;
+  will-change:transform;
+}
+#balloon-shadow{
+  position:absolute; bottom:-6px; left:50%; width:70px; height:16px;
+  background:radial-gradient(ellipse at center, var(--shadow-col), transparent 70%);
+  border-radius:50%; transform:translateX(-50%);
+}
+#string-svg{position:absolute; left:50%; top:100%; transform:translateX(-50%); overflow:visible;}
+#balloon-svg{display:block; filter:drop-shadow(0 10px 14px var(--shadow-col));}
+
+#stage-caption{position:absolute; bottom:6px; font-size:12px; font-weight:700; color:var(--text-sub);}
+
+/* countdown-to-start overlay */
+#ready-overlay{
+  position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
+  font-family:var(--font-display); font-size:88px; font-weight:800; color:#fff;
+  text-shadow:0 6px 20px rgba(0,0,0,.4);
+  z-index:5; pointer-events:none;
+}
+
+/* controls row under stage */
+#game-controls{display:flex; gap:10px; width:100%; max-width:460px; justify-content:center;}
+
+/* pause overlay */
+#pause-overlay{
+  position:fixed; inset:0; z-index:20; display:flex; align-items:center; justify-content:center;
+  background:rgba(10,6,24,.55); backdrop-filter:blur(6px);
+}
+
+/* ==================== RESULT SCREEN ==================== */
+#result-emoji{font-size:64px; line-height:1; animation:pop-in .5s cubic-bezier(.2,1.4,.4,1) both;}
+@keyframes pop-in{0%{transform:scale(0);opacity:0;}70%{transform:scale(1.15);}100%{transform:scale(1);opacity:1;}}
+#result-title{font-family:var(--font-display); font-weight:800; font-size:clamp(24px,7vw,34px); margin:0;}
+#result-stats{display:flex; gap:18px; justify-content:center; margin-top:4px; flex-wrap:wrap;}
+.stat-pill{background:var(--meter-bg); border-radius:16px; padding:8px 16px; font-weight:800; font-size:14px;}
+.stat-pill small{display:block; font-size:10px; font-weight:700; color:var(--text-sub); text-transform:uppercase;}
+
+/* confetti canvas overlay */
+#confetti-canvas{position:fixed; inset:0; z-index:15; pointer-events:none;}
+
+/* mute toggle state */
+.icon-btn[data-active="false"]{opacity:.5;}
+
+/* utility */
+.row{display:flex; gap:10px; flex-wrap:wrap; justify-content:center;}
+.small-note{font-size:11.5px; color:var(--text-sub); font-weight:600; max-width:320px;}
+
+@media (min-width:700px){
+  .glass-card{padding:34px 30px;}
+}
+</style>
+</head>
+<body>
+
+<div id="sky-decor"></div>
+
+<div id="app">
+
+  <div id="topbar">
+    <button class="icon-btn" id="btn-mute" title="Mute/Unmute" data-active="true">🔊</button>
+    <button class="icon-btn" id="btn-theme" title="Toggle theme">🌙</button>
+    <button class="icon-btn" id="btn-fullscreen" title="Fullscreen">⛶</button>
+  </div>
+
+  <!-- ============ START SCREEN ============ -->
+  <section class="screen" id="screen-start">
+    <div class="glass-card">
+      <h1 class="title">Balloon Blow<br>Challenge</h1>
+      <p class="subtitle">Blow into your mic and inflate the balloon before time runs out!</p>
+
+      <div id="difficulty-row" role="group" aria-label="Difficulty">
+        <button class="diff-btn" data-diff="easy">Easy</button>
+        <button class="diff-btn selected" data-diff="medium">Medium</button>
+        <button class="diff-btn" data-diff="hard">Hard</button>
+      </div>
+
+      <div style="margin-top:20px;">
+        <button class="btn-primary" id="btn-start">🎈 Tap to Start</button>
+      </div>
+      <p class="small-note" id="mic-hint" style="margin-top:14px;">We'll ask for microphone access — that's how your breath powers the balloon. Nothing is recorded or saved.</p>
+
+      <div id="leaderboard" aria-label="Best times"></div>
+    </div>
+  </section>
+
+  <!-- ============ GAME SCREEN ============ -->
+  <section class="screen hidden" id="screen-game">
+    <div id="hud">
+      <div class="hud-item">
+        <span class="hud-label">Time</span>
+        <span class="hud-value" id="hud-time">--</span>
+      </div>
+      <div class="hud-item">
+        <span class="hud-label">Inflation</span>
+        <span class="hud-value" id="hud-percent">0%</span>
+      </div>
+      <div class="hud-item">
+        <span class="hud-label">Mode</span>
+        <span class="hud-value" id="hud-mode" style="font-size:15px;">Medium</span>
+      </div>
+    </div>
+
+    <div id="mic-meter-wrap">
+      <div id="mic-meter-track"><div id="mic-meter-fill"></div></div>
+      <div id="mic-meter-caption">🎤 Blow or shout into the mic!</div>
+    </div>
+
+    <div id="stage">
+      <div id="ready-overlay" class="hidden"></div>
+      <div id="balloon-wrap">
+        <svg id="string-svg" width="6" height="70"><path d="M3,0 Q -6,35 3,70" stroke="#8a7a63" stroke-width="2" fill="none" stroke-linecap="round"/></svg>
+        <div id="balloon-shadow"></div>
+        <svg id="balloon-svg" width="220" height="260" viewBox="0 0 220 260">
+          <defs>
+            <radialGradient id="balloonGrad" cx="35%" cy="30%" r="75%">
+              <stop id="gradStop1" offset="0%" stop-color="#ffb3c6"/>
+              <stop id="gradStop2" offset="55%" stop-color="#ff6f91"/>
+              <stop id="gradStop3" offset="100%" stop-color="#d43f66"/>
+            </radialGradient>
+          </defs>
+          <path id="balloonBody" d="M110,20
+            C 45,20 20,80 20,130
+            C 20,190 60,230 110,230
+            C 160,230 200,190 200,130
+            C 200,80 175,20 110,20 Z" fill="url(#balloonGrad)"/>
+          <ellipse cx="72" cy="70" rx="26" ry="16" fill="rgba(255,255,255,.55)"/>
+          <path d="M100,230 L120,230 L110,250 Z" fill="#d43f66"/>
+        </svg>
+      </div>
+    </div>
+
+    <div id="game-controls">
+      <button class="btn-secondary" id="btn-pause">⏸ Pause</button>
+      <button class="btn-secondary" id="btn-quit">✖ Quit</button>
+    </div>
+  </section>
+
+  <!-- ============ RESULT SCREEN ============ -->
+  <section class="screen hidden" id="screen-result">
+    <div class="glass-card">
+      <div id="result-emoji">🎉</div>
+      <h2 id="result-title">You Win!</h2>
+      <p class="subtitle" id="result-sub">Great lungs! Balloon fully inflated.</p>
+      <div id="result-stats">
+        <div class="stat-pill"><small>Time</small><span id="stat-time">0.0s</span></div>
+        <div class="stat-pill"><small>Best</small><span id="stat-best">--</span></div>
+        <div class="stat-pill"><small>Mode</small><span id="stat-mode">Medium</span></div>
+      </div>
+      <div class="row" style="margin-top:22px;">
+        <button class="btn-primary" id="btn-again">🔁 Play Again</button>
+      </div>
+      <div class="row" style="margin-top:12px;">
+        <button class="btn-secondary" id="btn-home">🏠 Menu</button>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<!-- pause overlay -->
+<div id="pause-overlay" class="hidden">
+  <div class="glass-card" style="width:min(300px,86vw); text-align:center;">
+    <h2 style="font-family:var(--font-display); margin:0 0 6px;">Paused</h2>
+    <p class="subtitle" style="margin-bottom:16px;">Catch your breath 😄</p>
+    <button class="btn-primary" id="btn-resume">▶ Resume</button>
+  </div>
+</div>
+
+<canvas id="confetti-canvas"></canvas>
+
+<script>
+/* ======================================================
+   BALLOON BLOW CHALLENGE — game logic
+   Sections: utils, audio engine, sky decor, difficulty
+   config, balloon physics, confetti system, game state
+   machine, storage, event wiring.
+   ====================================================== */
+(function(){
+"use strict";
+
+/* ---------------- utils ---------------- */
+const clamp=(v,a,b)=>Math.min(b,Math.max(a,v));
+const lerp=(a,b,t)=>a+(b-a)*t;
+const rand=(a,b)=>a+Math.random()*(b-a);
+const $=(id)=>document.getElementById(id);
+
+/* ---------------- sky decor (clouds / stars) ---------------- */
+function buildSkyDecor(){
+  const wrap=$('sky-decor');
+  wrap.innerHTML='';
+  // clouds
+  for(let i=0;i<6;i++){
+    const c=document.createElement('div');
+    c.className='cloud';
+    const size=rand(50,130);
+    c.style.width=size+'px';
+    c.style.height=(size*0.5)+'px';
+    c.style.top=rand(4,55)+'%';
+    const dur=rand(28,55);
+    c.style.animationDuration=dur+'s';
+    c.style.animationDelay=(-rand(0,dur))+'s';
+    wrap.appendChild(c);
+  }
+  // twinkling stars (visible mainly in dark mode via opacity of sky)
+  for(let i=0;i<26;i++){
+    const s=document.createElement('div');
+    s.className='twinkle';
+    s.style.left=rand(0,100)+'%';
+    s.style.top=rand(0,60)+'%';
+    s.style.animationDelay=rand(0,3.5)+'s';
+    wrap.appendChild(s);
+  }
+}
+buildSkyDecor();
+
+/* ---------------- difficulty config ---------------- */
+const DIFFICULTY={
+  easy:  { label:'Easy',   requiredScale:1.55, timeLimit:45, speedFactor:1.55, decay:0.010 },
+  medium:{ label:'Medium', requiredScale:1.85, timeLimit:30, speedFactor:1.05, decay:0.014 },
+  hard:  { label:'Hard',   requiredScale:2.15, timeLimit:20, speedFactor:0.72, decay:0.018 }
+};
+let currentDiff='medium';
+
+/* ---------------- persistent storage ---------------- */
+const STORE_KEY='balloonBlowBestTimes_v1';
+function loadBest(){
+  try{ return JSON.parse(localStorage.getItem(STORE_KEY))||{}; }catch(e){ return {}; }
+}
+function saveBest(diff,time){
+  const data=loadBest();
+  if(!data[diff] || time<data[diff]){ data[diff]=time; localStorage.setItem(STORE_KEY,JSON.stringify(data)); return true; }
+  return false;
+}
+function renderLeaderboard(){
+  const data=loadBest();
+  const el=$('leaderboard');
+  el.innerHTML='';
+  ['easy','medium','hard'].forEach(k=>{
+    const row=document.createElement('div');
+    row.className='lb-row';
+    const t=data[k];
+    row.innerHTML=`<span>${DIFFICULTY[k].label}</span><span>${t? t.toFixed(1)+'s' : '—'}</span>`;
+    el.appendChild(row);
+  });
+}
+renderLeaderboard();
+
+/* ---------------- theme / mute / fullscreen ---------------- */
+const btnTheme=$('btn-theme'), btnMute=$('btn-mute'), btnFullscreen=$('btn-fullscreen');
+function applyTheme(dark){
+  document.body.classList.toggle('dark',dark);
+  btnTheme.textContent=dark? '☀️':'🌙';
+  localStorage.setItem('balloonTheme',dark?'dark':'light');
+}
+(function initTheme(){
+  const saved=localStorage.getItem('balloonTheme');
+  const prefersDark=window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+  applyTheme(saved? saved==='dark' : prefersDark);
+})();
+btnTheme.addEventListener('click',()=>applyTheme(!document.body.classList.contains('dark')));
+
+let muted=false;
+btnMute.addEventListener('click',()=>{
+  muted=!muted;
+  btnMute.dataset.active=(!muted).toString();
+  btnMute.textContent=muted? '🔇':'🔊';
+  Audio_setMuted(muted);
+});
+
+btnFullscreen.addEventListener('click',()=>{
+  if(!document.fullscreenElement){
+    document.documentElement.requestFullscreen?.().catch(()=>{});
+  }else{
+    document.exitFullscreen?.().catch(()=>{});
+  }
+});
+
+/* ================================================================
+   AUDIO ENGINE — mic analysis + procedural sound effects (no files)
+   ================================================================ */
+const AudioEngine=(function(){
+  let ctx=null, masterGain=null, musicGain=null, sfxGain=null;
+  let analyser=null, micSource=null, micStream=null;
+  let timeData=null;
+  let smoothedLevel=0;
+  let musicNodes=[];
+  let musicPlaying=false;
+  let stretchNode=null;
+
+  function ensureCtx(){
+    if(!ctx){
+      ctx=new (window.AudioContext||window.webkitAudioContext)();
+      masterGain=ctx.createGain(); masterGain.gain.value=1; masterGain.connect(ctx.destination);
+      musicGain=ctx.createGain(); musicGain.gain.value=0.12; musicGain.connect(masterGain);
+      sfxGain=ctx.createGain(); sfxGain.gain.value=0.9; sfxGain.connect(masterGain);
+    }
+    if(ctx.state==='suspended') ctx.resume();
+    return ctx;
+  }
+
+  function setMuted(m){ if(masterGain) masterGain.gain.setTargetAtTime(m?0:1, ctx.currentTime, 0.05); }
+
+  async function requestMic(){
+    ensureCtx();
+    micStream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:false,noiseSuppression:false,autoGainControl:false}});
+    micSource=ctx.createMediaStreamSource(micStream);
+    analyser=ctx.createAnalyser();
+    analyser.fftSize=1024;
+    analyser.smoothingTimeConstant=0.4;
+    timeData=new Uint8Array(analyser.fftSize);
+    micSource.connect(analyser);
+    return true;
+  }
+
+  function stopMic(){
+    if(micStream){ micStream.getTracks().forEach(t=>t.stop()); micStream=null; }
+    micSource=null; ana
