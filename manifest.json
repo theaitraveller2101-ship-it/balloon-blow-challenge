@@ -20,4 +20,25 @@
       "type": "image/png"
     }
   ]
+  ,
+"screenshots": [
+  {
+    "src": "home-screen.png",
+    "sizes": "1080x1920",
+    "type": "image/png",
+    "form_factor": "narrow"
+  },
+  {
+    "src": "gameplay.png",
+    "sizes": "1080x1920",
+    "type": "image/png",
+    "form_factor": "narrow"
+  },
+  {
+    "src": "game-over.png",
+    "sizes": "1080x1920",
+    "type": "image/png",
+    "form_factor": "narrow"
+  }
+]
 }
